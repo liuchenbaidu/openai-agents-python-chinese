@@ -1,0 +1,5 @@
+[api]
+base_url = https://dashscope.aliyuncs.com/compatible-mode/v1
+api_key = YOUR_API_KEY_HERE
+
+# Copy this file to config.ini and replace YOUR_API_KEY_HERE with your actual API key 

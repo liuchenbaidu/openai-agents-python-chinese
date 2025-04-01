@@ -1,3 +1,11 @@
+# 这个agent框架比较简单，用国产大模型来试用，大家可以使用这个框架来开发自己的agent
+1、pip install openai-agents
+2、test.py 是测试调用qwewn大模型实现agent
+3、test_external.py 多轮对话，调用qwen大模型实现agent，以及测肤工具,天气工具函数，和测肤工具函数是模拟的在本地的。
+
+
+
+# 以下的openAI的sdk是基于python的，所以需要安装python环境
 # OpenAI Agents SDK
 
 The OpenAI Agents SDK is a lightweight yet powerful framework for building multi-agent workflows.
@@ -178,3 +186,33 @@ We'd like to acknowledge the excellent work of the open-source community, especi
 -   [uv](https://github.com/astral-sh/uv) and [ruff](https://github.com/astral-sh/ruff)
 
 We're committed to continuing to build the Agents SDK as an open source framework so others in the community can expand on our approach.
+
+# OpenAI Agents Python (Chinese)
+
+A Python implementation of OpenAI agents with Chinese language support.
+
+## Configuration
+
+To use this project, you need to set up your API credentials in a configuration file:
+
+1. Copy the template configuration file:
+   ```
+   cp config.ini.template config.ini
+   ```
+
+2. Edit `config.ini` and replace `YOUR_API_KEY_HERE` with your actual API key:
+   ```ini
+   [api]
+   base_url = https://dashscope.aliyuncs.com/compatible-mode/v1
+   api_key = YOUR_ACTUAL_API_KEY
+   ```
+
+## Running the Application
+
+After configuring your API credentials, you can run the application:
+
+```
+python test_multi_turn.py
+```
+
+This will start a conversation with the AI agent. Type your messages and the agent will respond. Type 'exit' to end the conversation.

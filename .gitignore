@@ -142,3 +142,6 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# 忽略所有 .ini 文件
+*.ini
