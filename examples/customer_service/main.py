@@ -3,6 +3,10 @@ from __future__ import annotations as _annotations
 import asyncio
 import random
 import uuid
+import os
+import sys
+import configparser
+from openai import AsyncOpenAI
 
 from pydantic import BaseModel
 
@@ -85,6 +89,45 @@ async def on_seat_booking_handoff(context: RunContextWrapper[AirlineAgentContext
 
 ### AGENTS
 
+# Read configuration from config.ini
+config = configparser.ConfigParser()
+
+# Try different config file paths (current directory, script directory, absolute path)
+config_paths = [
+    'config.ini',
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.ini'),
+    'project/openai-agents-python-chinese/config.ini',
+    'project/openai-agents-python-chinese/examples/customer_service/config.ini'
+]
+
+config_found = False
+for config_path in config_paths:
+    if os.path.exists(config_path):
+        config.read(config_path)
+        config_found = True
+        print(f"Using configuration from: {config_path}")
+        break
+
+if not config_found:
+    print("Error: Configuration file 'config.ini' not found.")
+    print("Please create a config.ini file with [api] section containing base_url and api_key.")
+    sys.exit(1)
+
+try:
+    # Create client using configuration values
+    external_client = AsyncOpenAI(
+        base_url=config['api']['base_url'],
+        api_key=config['api']['api_key'],
+        default_headers={"x-stainless-telemetry": "false"}
+    )
+except KeyError as e:
+    print(f"Error: Missing configuration key: {e}")
+    print("Please ensure config.ini contains [api] section with base_url and api_key.")
+    sys.exit(1)
+
+# set_default_openai_client(external_client)
+from agents import Agent, Runner, OpenAIChatCompletionsModel, ModelSettings
+
 faq_agent = Agent[AirlineAgentContext](
     name="FAQ Agent",
     handoff_description="A helpful agent that can answer questions about the airline.",
@@ -95,6 +138,7 @@ faq_agent = Agent[AirlineAgentContext](
     1. Identify the last question asked by the customer.
     2. Use the faq lookup tool to answer the question. Do not rely on your own knowledge.
     3. If you cannot answer the question, transfer back to the triage agent.""",
+    model=OpenAIChatCompletionsModel(model="qwen-max",openai_client=external_client),
     tools=[faq_lookup_tool],
 )
 
@@ -110,6 +154,7 @@ seat_booking_agent = Agent[AirlineAgentContext](
     3. Use the update seat tool to update the seat on the flight.
     If the customer asks a question that is not related to the routine, transfer back to the triage agent. """,
     tools=[update_seat],
+    model=OpenAIChatCompletionsModel(model="qwen-max",openai_client=external_client),
 )
 
 triage_agent = Agent[AirlineAgentContext](
@@ -122,7 +167,9 @@ triage_agent = Agent[AirlineAgentContext](
     handoffs=[
         faq_agent,
         handoff(agent=seat_booking_agent, on_handoff=on_seat_booking_handoff),
+        
     ],
+    model=OpenAIChatCompletionsModel(model="qwen-max",openai_client=external_client),
 )
 
 faq_agent.handoffs.append(triage_agent)
